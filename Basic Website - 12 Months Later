@@ -357,12 +357,12 @@
     <!-- Image Section -->
     <div class="image-section" id="content">
         <div class="left-image">
-            <div class="placeholder-text">Image: Leafy Greens<br>🥬</div>
+            <div class="placeholder-text">Image: Add Picture 2<br></div>
         </div>
         <div class="right-content">
             <p class="quote">"The highest human act is to <em>inspire</em>" - Nipsey Hussle</p>
             <div class="right-image-placeholder">
-                Image: Vegetables & Bread<br>🥖🥕
+                Image: Add Pciture<br>
             </div>
             <p class="caption"><strong>12 Months Later</strong> — This documentary shows the journey I took and serves as inspiration to others</p>
         </div>
