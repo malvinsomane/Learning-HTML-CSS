@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Conference 2025 — Schedule</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<style>
+    .schedule-section h2 {
+        font-size: 1.2rem;
+    }
+
+    /* Reset & Base */
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background-color: #f7f9fc;
+        color: #333;
+        padding: 20px;
+    }
+
+    /* Header */
+    .site-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .site-header h1 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+        color: #222;
+    }
+
+    .site-header .tagline {
+        font-size: 1.1rem;
+        color: #555;
+    }
+
+    /* Schedule Section */
+    .schedule-section {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .schedule-section h2 {
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        color: #004aad;
+        text-align: center;
+    }
+
+    /* Table Styling */
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .schedule-table thead {
+        background-color: #004aad;
+        color: white;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+        padding: 14px 16px;
+        text-align: left;
+    }
+
+    .schedule-table tbody tr {
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s ease;
+    }
+
+    .schedule-table tbody tr:hover {
+        background-color: #f0f4ff;
+    }
+
+    .schedule-table th:first-child,
+    .schedule-table td:first-child {
+        width: 150px;
+        font-weight: 600;
+        color: #222;
+    }
+
+    /* Footer */
+    .site-footer {
+        text-align: center;
+        margin-top: 50px;
+        color: #777;
+        font-size: 0.9rem;
+    }
+
+/* Responsive */
+@media (max-width: 600px) {
+.schedule-table th, .schedule-table td {
+padding: 10px;
+font-size: 0.9rem;
+}
+
+.schedule-section h2 {
+font-size: 1.2rem;
+}
+}
+  
+</style>
+
+<body>
+    <header class="site-header">
+        <h1>Tech Conference 2025</h1>
+        <p class="tagline">📅 Event Schedule</p>
+    </header>
+    <div class="schedule-section">
+        <h2>Day 1 — October 10, 2025</h2>
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Session</th>
+                    <th>Speaker</th>
+                    <th>Room</th>
+                    <th>Table</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>09:00 – 10:00</td>
+                    <td>Opening Keynote: The Future of AI</td>
+                    <td>Sarah Johnson</td>
+                    <td>Main Hall</td>
+                </tr>
+                <tr>
+                    <td>10:15 – 11:00</td>
+                    <td>Building Scalable Web Apps</td>
+                    <td>Mark Lee</td>
+                    <td>Room A</td>
+                </tr>
+                <tr>
+                    <td>11:15 – 12:00</td>
+                    <td>Intro to Quantum Computing</td>
+                    <td>Dr. Nina Patel</td>
+                    <td>Room B</td>
+                </tr>
+                <tr>
+                    <td>13:00 – 14:00</td>
+                    <td>Panel: Ethics in Technology</td>
+                    <td>Various</td>
+                    <td>Main Hall</td>
+                </tr>
+                <tr>
+                    <td>14:15 – 15:00</td>
+                    <td>Design Systems That Scale</td>
+                    <td>Alex Kim</td>
+                    <td>Room C</td>
+                </tr>
+                <tr>
+                    <td>15:15 – 16:00</td>
+                    <td>Closing Session & Networking</td>
+                    <td>Organizers</td>
+                    <td>Lounge</td>
+                </tr>
+                <tr>
+                    <td> 16:00 - 16:50 </td>
+                    <td> Questions </td>
+                    <td> Organisers </td>
+                    <td> Lounge </td>
+                    <td> 2 </td>
+
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    <footer class="site-footer">
+        <p>© 2025 Tech Conference — All Rights Reserved</p>
+    </footer>
+</body>
+
+</html>
