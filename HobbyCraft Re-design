@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hobbycraft — Redesigned Checkout</title>
+<style>
+  /* EXACT COLOURS FROM FIGMA SCREENSHOT PIXEL SAMPLING:
+     Header/CTA bg:   #A82D3F  (rgb 168,45,63)
+     Green circle:    #00C62E  (rgb 0,198,46)
+     Screen bg:       #F6F6F6
+     Card bg:         #FFFFFF
+     Dark text:       #1F1F1F
+     Mid text:        #4D4D4D
+     Light text:      #8A8A8A
+     Border:          #E0E0E0
+     Annotation tag:  #F5F500 yellow
+  */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#F4F4F4; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding-bottom:60px; }
+
+  .test-banner { width:100%; background:#1F1F1F; color:#fff; text-align:center; padding:7px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; font-weight:600; }
+  .test-banner span { color:#F5F500; }
+
+  .task-panel { width:375px; background:#fff; border:1px solid #E0E0E0; border-radius:6px; padding:16px; margin:18px 0 0; }
+  .task-panel h3 { font-size:13px; font-weight:700; margin-bottom:5px; }
+  .task-panel > p { font-size:11px; color:#4D4D4D; margin-bottom:12px; line-height:1.5; }
+  .task-list { list-style:none; }
+  .task-list li { display:flex; gap:8px; align-items:flex-start; padding:7px 0; border-bottom:1px solid #F0F0F0; font-size:12px; line-height:1.4; }
+  .task-list li:last-child { border-bottom:none; }
+  .tn { width:18px; height:18px; border-radius:50%; background:#A82D3F; color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+  .tn.done { background:#00C62E; }
+
+  .phone { width:375px; background:#F6F6F6; margin:14px 0 0; border:1px solid #CCCCCC; border-radius:4px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,.13); min-height:680px; display:flex; flex-direction:column; }
+
+  .screen { display:none; flex:1; flex-direction:column; }
+  .screen.active { display:flex; }
+
+  .hdr { background:#A82D3F; padding:13px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .logo { color:#fff; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+  .back-btn { color:#fff; font-size:12px; background:none; border:none; cursor:pointer; font-family:inherit; opacity:.85; }
+
+  .body { flex:1; overflow-y:auto; padding:14px 14px 88px; background:#F6F6F6; }
+
+  .page-title { font-size:16px; font-weight:700; color:#1F1F1F; margin-bottom:10px; }
+
+  .stepper { display:flex; border-bottom:1px solid #E8E8E8; margin-bottom:14px; background:#fff; margin-left:-14px; margin-right:-14px; margin-top:-14px; padding:10px 14px 0; }
+  .step { flex:1; text-align:center; font-size:11px; color:#8A8A8A; padding-bottom:8px; border-bottom:2px solid transparent; font-weight:400; }
+  .step.active { color:#1F1F1F; font-weight:700; border-bottom:2px solid #1F1F1F; }
+  .step.done { color:#4D4D4D; }
+
+  .card { background:#fff; border:1px solid #E8E8E8; border-radius:3px; padding:13px; margin-bottom:9px; }
+  .card-lbl { font-size:13px; font-weight:700; color:#1F1F1F; margin-bottom:9px; }
+
+  .item { display:flex; gap:11px; align-items:flex-start; padding:9px 0; border-bottom:1px solid #F0F0F0; }
+  .item:last-child { border-bottom:none; padding-bottom:0; }
+  .item-img { width:54px; height:54px; background:#F0F0F0; border-radius:2px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#8A8A8A; font-style:italic; }
+  .item-info { flex:1; }
+  .item-name { font-size:12px; font-weight:600; color:#1F1F1F; margin-bottom:2px; }
+  .item-price { font-size:13px; font-weight:700; color:#1F1F1F; margin-bottom:6px; }
+  .item-row { display:flex; align-items:center; justify-content:space-between; }
+  .qty { display:flex; align-items:center; gap:7px; background:#F0F0F0; border-radius:20px; padding:3px 9px; }
+  .qbtn { background:none; border:none; cursor:pointer; font-size:14px; font-weight:700; color:#1F1F1F; line-height:1; padding:0; width:16px; }
+  .qnum { font-size:12px; font-weight:600; color:#1F1F1F; min-width:10px; text-align:center; }
+  .rm { font-size:11px; color:#8A8A8A; text-decoration:underline; background:none; border:none; cursor:pointer; font-family:inherit; }
+
+  .srow { display:flex; justify-content:space-between; font-size:12px; color:#4D4D4D; margin-bottom:5px; }
+  .srow.tot { font-size:14px; font-weight:700; color:#1F1F1F; border-top:1px solid #E0E0E0; padding-top:7px; margin-top:3px; margin-bottom:0; }
+  .voucher-link { font-size:12px; color:#4D4D4D; margin-top:9px; cursor:pointer; }
+
+  .field { margin-bottom:11px; }
+  .frow { display:flex; gap:9px; }
+  .frow .field { flex:1; }
+  label { display:block; font-size:10px; font-weight:700; color:#4D4D4D; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; }
+  input[type=text], input[type=password] { width:100%; padding:8px 10px; border:1px solid #E0E0E0; border-radius:2px; font-size:13px; font-family:inherit; background:#fff; outline:none; color:#1F1F1F; transition:border .15s; }
+  input[type=text]:focus, input[type=password]:focus { border-color:#A82D3F; }
+  .pc-row { display:flex; gap:7px; }
+  .pc-row input { flex:1; }
+  .find-btn { padding:8px 12px; background:#F0F0F0; border:1px solid #E0E0E0; border-radius:2px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .find-btn:hover { background:#E8E8E8; }
+  .cnote { font-size:10px; color:#8A8A8A; margin:3px 0 10px; }
+  .cnote::before { content:"★ "; }
+  .af-msg { display:none; font-size:10px; color:#007A20; font-weight:600; margin-bottom:8px; }
+
+  .del-opt { display:flex; align-items:center; gap:11px; padding:10px 11px; border:1px solid #E0E0E0; border-radius:2px; margin-bottom:6px; cursor:pointer; background:#fff; transition:border .15s; }
+  .del-opt:hover { border-color:#A82D3F; }
+  .del-opt.sel { border-color:#A82D3F; }
+  .radio { width:15px; height:15px; border-radius:50%; border:1.5px solid #C0C0C0; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .del-opt.sel .radio { border-color:#1F1F1F; }
+  .rdot { width:7px; height:7px; border-radius:50%; background:#1F1F1F; display:none; }
+  .del-opt.sel .rdot { display:block; }
+  .dinfo { flex:1; }
+  .dname { font-size:12px; font-weight:600; color:#1F1F1F; }
+  .dprice { font-size:12px; font-weight:700; color:#1F1F1F; }
+
+  .tabs { display:flex; border:1px solid #E0E0E0; border-radius:2px; overflow:hidden; margin-bottom:12px; }
+  .tab { flex:1; padding:9px 0; text-align:center; font-size:12px; font-weight:500; cursor:pointer; color:#8A8A8A; background:#fff; border:none; font-family:inherit; }
+  .tab:not(:last-child) { border-right:1px solid #E0E0E0; }
+  .tab.act { background:#3D3D3D; color:#fff; font-weight:700; }
+
+  .sec-bar { background:#F6F6F6; border:1px solid #E8E8E8; border-radius:2px; padding:8px 11px; font-size:11px; color:#4D4D4D; margin-bottom:9px; display:flex; align-items:center; gap:5px; }
+  .tog-row { display:flex; align-items:center; justify-content:space-between; font-size:12px; color:#1F1F1F; }
+  .toggle { width:36px; height:20px; background:#C0C0C0; border-radius:10px; position:relative; cursor:pointer; }
+  .tknob { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+
+  .confirm-body { display:flex; flex-direction:column; align-items:center; padding:30px 20px 20px; text-align:center; }
+  .gc { width:100px; height:100px; border-radius:50%; background:#00C62E; display:flex; align-items:center; justify-content:center; font-size:54px; font-weight:900; color:#000; margin-bottom:14px; }
+  .done-title { font-size:28px; font-weight:800; color:#1F1F1F; margin-bottom:6px; }
+  .done-sub { font-size:12px; color:#4D4D4D; margin-bottom:14px; }
+  .order-ref { font-size:13px; font-weight:700; background:#F0F0F0; padding:5px 14px; border-radius:2px; cursor:pointer; }
+
+
+  .cta-bar { position:sticky; bottom:0; background:#fff; border-top:1px solid #E8E8E8; padding:11px 14px 14px; }
+  .cta { width:100%; padding:13px; background:#A82D3F; color:#fff; border:none; border-radius:2px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; letter-spacing:.01em; }
+  .cta:hover { background:#8E2535; }
+  .cta-note { font-size:10px; color:#8A8A8A; text-align:center; margin-top:5px; }
+
+  .fb-wrap { width:375px; background:#fff; border:1px solid #E0E0E0; border-radius:6px; padding:20px; margin:14px 0 40px; }
+  .fb-wrap h2 { font-size:16px; font-weight:700; margin-bottom:5px; }
+  .fb-wrap > p { font-size:12px; color:#4D4D4D; margin-bottom:16px; line-height:1.5; }
+  .qb { margin-bottom:14px; }
+  .ql { display:block; font-size:10px; font-weight:700; color:#1F1F1F; text-transform:uppercase; letter-spacing:.05em; margin-bottom:7px; }
+  .stars { display:flex; gap:4px; }
+  .star { font-size:22px; color:#D0D0D0; cursor:pointer; }
+  .star.lit { color:#F0B800; }
+  select, textarea { width:100%; padding:8px 10px; border:1px solid #E0E0E0; border-radius:2px; font-size:13px; font-family:inherit; outline:none; background:#fff; }
+  select:focus, textarea:focus { border-color:#A82D3F; }
+  textarea { resize:vertical; min-height:64px; }
+  .sub-btn { width:100%; padding:12px; background:#A82D3F; color:#fff; border:none; border-radius:2px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+  .sub-btn:hover { background:#8E2535; }
+  .ty { text-align:center; padding:24px 0; }
+  .ty .ico { font-size:44px; margin-bottom:10px; }
+  .ty h3 { font-size:17px; font-weight:700; margin-bottom:7px; }
+  .ty p { font-size:12px; color:#4D4D4D; }
+</style>
+</head>
+<body>
+
+<div class="test-banner"><span>USABILITY TEST</span> &nbsp;·&nbsp; Hobbycraft Checkout Redesign &nbsp;·&nbsp; L6 UX Design &nbsp;·&nbsp; Malvin Somane</div>
+
+<div class="task-panel" id="taskPanel">
+  <h3>Your Tasks</h3>
+  <p>Work through each task using the prototype. Think out loud as you go — there are no right or wrong answers.</p>
+  <ul class="task-list">
+    <li><div class="tn" id="tn1">1</div><span id="tt1">Complete the full checkout from basket through to the confirmation screen.</span></li>
+    <li><div class="tn" id="tn2">2</div><span id="tt2">Select <strong>Click and Collect</strong> as the delivery method on the delivery screen.</span></li>
+    <li><div class="tn" id="tn3">3</div><span id="tt3">Apply the voucher code <strong>CRAFT10</strong> on the cart screen.</span></li>
+    <li><div class="tn" id="tn4">4</div><span id="tt4">Switch the payment method to <strong>PayPal</strong> on the payment screen.</span></li>
+    <li><div class="tn" id="tn5">5</div><span id="tt5">Locate your <strong>order reference number</strong> on the confirmation screen.</span></li>
+  </ul>
+</div>
+
+<div class="phone" id="phone">
+
+  <!-- S1: CART -->
+  <div class="screen active" id="s1">
+    <div class="hdr"><span class="logo">HOBBYCRAFT</span></div>
+    <div class="body">
+      <div class="stepper">
+        <div class="step active">Cart</div>
+        <div class="step">Delivery</div>
+        <div class="step">Payment</div>
+        <div class="step">Done</div>
+      </div>
+      <div class="page-title">🛒 Cart (3 items)</div>
+      <div class="card">
+        <div class="item">
+          <div class="item-img">img</div>
+          <div class="item-info">
+            <div class="item-name">Acrylic Paint Set 24pc</div>
+            <div class="item-price">£14.99</div>
+            <div class="item-row">
+              <div class="qty"><button class="qbtn" onclick="chQ(this,-1)">−</button><span class="qnum">1</span><button class="qbtn" onclick="chQ(this,1)">+</button></div>
+              <button class="rm" onclick="rmI(this)">Remove</button>
+            </div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-img">img</div>
+          <div class="item-info">
+            <div class="item-name">Watercolour Paper A3 Pad</div>
+            <div class="item-price">£8.49</div>
+            <div class="item-row">
+              <div class="qty"><button class="qbtn" onclick="chQ(this,-1)">−</button><span class="qnum">1</span><button class="qbtn" onclick="chQ(this,1)">+</button></div>
+              <button class="rm" onclick="rmI(this)">Remove</button>
+            </div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="item-img">img</div>
+          <div class="item-info">
+            <div class="item-name">Round Brush Set x6</div>
+            <div class="item-price">£6.99</div>
+            <div class="item-row">
+              <div class="qty"><button class="qbtn" onclick="chQ(this,-1)">−</button><span class="qnum">1</span><button class="qbtn" onclick="chQ(this,1)">+</button></div>
+              <button class="rm" onclick="rmI(this)">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-lbl">Order Summary</div>
+        <div class="srow"><span>Subtotal</span><span>£30.47</span></div>
+        <div class="srow"><span>Delivery</span><span>£3.99</span></div>
+        <div class="srow" id="discRow" style="display:none"><span style="color:#007A20">Voucher CRAFT10</span><span style="color:#007A20">−£3.05</span></div>
+        <div class="srow tot"><span>Total</span><span id="totalAmt">£34.46</span></div>
+        <div class="voucher-link" id="vcLink" onclick="showVc()">🏷 Got a voucher code? +</div>
+        <div id="vcBox" style="display:none;margin-top:9px;">
+          <div style="display:flex;gap:7px">
+            <input type="text" id="vcInput" placeholder="Enter code e.g. CRAFT10" style="flex:1">
+            <button onclick="applyVc()" style="padding:8px 11px;background:#A82D3F;color:#fff;border:none;border-radius:2px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cta-bar"><button class="cta" onclick="goTo(2)">Proceed to Delivery →</button></div>
+  </div>
+
+  <!-- S2: DELIVERY -->
+  <div class="screen" id="s2">
+    <div class="hdr"><span class="logo">HOBBYCRAFT</span><button class="back-btn" onclick="goTo(1)">← Back</button></div>
+    <div class="body">
+      <div class="stepper">
+        <div class="step done">Cart</div>
+        <div class="step active">Delivery</div>
+        <div class="step">Payment</div>
+        <div class="step">Done</div>
+      </div>
+      <div class="page-title">Delivery Details</div>
+      <div class="card">
+        <div class="field">
+          <label>Find address by postcode</label>
+          <div class="pc-row">
+            <input type="text" id="pcIn" placeholder="e.g. NR1 1AA">
+            <button class="find-btn" onclick="pcLookup()">Find</button>
+          </div>
+        </div>
+        <div class="cnote">Auto-fills address — reduces friction (Constraint)</div>
+        <div class="af-msg" id="afMsg">✓ Address found and auto-filled</div>
+        <div class="frow">
+          <div class="field"><label>First Name</label><input type="text" id="fn" placeholder="Jane"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="ln" placeholder="Smith"></div>
+        </div>
+        <div class="field"><label>Address Line 1</label><input type="text" id="a1" placeholder="12 Craft Lane"></div>
+        <div class="field"><label>Address Line 2 (optional)</label><input type="text" id="a2"></div>
+        <div class="frow">
+          <div class="field"><label>Town / City</label><input type="text" id="ct" placeholder="Norwich"></div>
+          <div class="field">
+            <label>Postcode</label>
+            <input type="text" id="pc" placeholder="NR1 1AA">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-lbl">Delivery Method</div>
+        <div class="del-opt sel" onclick="selD(this)">
+          <div class="radio"><div class="rdot"></div></div>
+          <div class="dinfo"><div class="dname">Standard Delivery (3–5 days)</div></div>
+          <div class="dprice">£3.99</div>
+        </div>
+        <div class="del-opt" onclick="selD(this)">
+          <div class="radio"><div class="rdot"></div></div>
+          <div class="dinfo"><div class="dname">Express Delivery (Next day)</div></div>
+          <div class="dprice">£6.99</div>
+        </div>
+        <div class="del-opt" onclick="selD(this);mk(2)">
+          <div class="radio"><div class="rdot"></div></div>
+          <div class="dinfo"><div class="dname">Click &amp; Collect — In store</div></div>
+          <div class="dprice">FREE</div>
+        </div>
+      </div>
+    </div>
+    <div class="cta-bar"><button class="cta" onclick="goTo(3)">Continue to Payment →</button></div>
+  </div>
+
+  <!-- S3: PAYMENT -->
+  <div class="screen" id="s3">
+    <div class="hdr"><span class="logo">HOBBYCRAFT</span><button class="back-btn" onclick="goTo(2)">← Back</button></div>
+    <div class="body">
+      <div class="stepper">
+        <div class="step done">Cart</div>
+        <div class="step done">Delivery</div>
+        <div class="step active">Payment</div>
+        <div class="step">Done</div>
+      </div>
+      <div class="page-title">Payment</div>
+      <div class="card">
+        <div style="font-size:11px;color:#4D4D4D;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Pay with</div>
+        <div class="tabs">
+          <button class="tab act" onclick="selT(this)">Card</button>
+          <button class="tab" onclick="selT(this);mk(4)">PayPal</button>
+          <button class="tab" onclick="selT(this)">Apple Pay</button>
+        </div>
+        <div id="cF">
+          <div class="field"><label>Card Number</label><input type="text" placeholder="●●●● ●●●● ●●●● ●●●●" maxlength="19" oninput="fC(this)"></div>
+          <div class="field"><label>Name on Card</label><input type="text" placeholder="JANE SMITH"></div>
+          <div class="frow">
+            <div class="field"><label>Expiry Date</label><input type="text" placeholder="MM / YY" maxlength="7" oninput="fE(this)"></div>
+            <div class="field"><label>CVV</label><input type="password" placeholder="●●●" maxlength="3"></div>
+          </div>
+        </div>
+        <div id="pF" style="display:none;text-align:center;padding:14px 0"><div style="font-size:26px;margin-bottom:7px">🅿️</div><div style="font-size:12px;color:#4D4D4D">You will be redirected to PayPal to complete payment securely.</div></div>
+        <div id="aF" style="display:none;text-align:center;padding:14px 0"><div style="font-size:26px;margin-bottom:7px"></div><div style="font-size:12px;color:#4D4D4D">Use Face ID or Touch ID to authorise payment.</div></div>
+      </div>
+      <div class="sec-bar">🔒 Secure checkout — 256-bit SSL encrypted</div>
+      <div class="card"><div class="tog-row"><span>Billing address same as delivery</span><div class="toggle"><div class="tknob"></div></div></div></div>
+      <div class="card">
+        <div class="card-lbl">Order Summary</div>
+        <div class="srow"><span>3 items</span><span>£30.47</span></div>
+        <div class="srow"><span>Delivery (Standard)</span><span>£3.99</span></div>
+        <div class="srow tot"><span>Total</span><span>£34.46</span></div>
+      </div>
+    </div>
+    <div class="cta-bar">
+      <button class="cta" onclick="placeOrder()">Place Order — £34.46</button>
+      <div class="cta-note">By placing your order you agree to our T&amp;Cs</div>
+    </div>
+  </div>
+
+  <!-- S4: CONFIRMATION -->
+  <div class="screen" id="s4">
+    <div class="hdr"><span class="logo">HOBBYCRAFT</span></div>
+    <div class="body">
+      <div class="stepper">
+        <div class="step done">Cart</div>
+        <div class="step done">Delivery</div>
+        <div class="step done">Payment</div>
+        <div class="step active">Done</div>
+      </div>
+      <div class="confirm-body">
+        <div class="gc">✓</div>
+        <div class="done-title">Done!</div>
+        <div class="done-sub">please check your emails for confirmation</div>
+        <div class="order-ref" onclick="mk(5);mk(1)" id="oRef">Order #HC-29481</div>
+      </div>
+    </div>
+    <div class="cta-bar"><button class="cta" onclick="showFb()">Continue Shopping</button></div>
+  </div>
+
+</div>
+
+<!-- FEEDBACK -->
+<div class="fb-wrap" id="fbForm" style="display:none">
+  <h2>Testing Complete</h2>
+  <p>Please answer the questions below. Your responses will be used to evaluate the design. Takes around 3 minutes.</p>
+  <div class="qb"><span class="ql">1. How easy was the checkout to use overall?</span><div class="stars" id="st1"><span class="star" onclick="rt('st1',1)">★</span><span class="star" onclick="rt('st1',2)">★</span><span class="star" onclick="rt('st1',3)">★</span><span class="star" onclick="rt('st1',4)">★</span><span class="star" onclick="rt('st1',5)">★</span></div></div>
+  <div class="qb"><span class="ql">2. Which feature did you find most useful?</span><select><option value="">Select one...</option><option>Postcode address lookup</option><option>Payment method tabs</option><option>Voucher code field</option><option>Progress stepper</option><option>Order confirmation screen</option></select></div>
+  <div class="qb"><span class="ql">3. Was anything confusing or hard to find?</span><textarea placeholder="Describe any problems..."></textarea></div>
+  <div class="qb"><span class="ql">4. How easy was the order reference to find on the confirmation screen?</span><div class="stars" id="st4"><span class="star" onclick="rt('st4',1)">★</span><span class="star" onclick="rt('st4',2)">★</span><span class="star" onclick="rt('st4',3)">★</span><span class="star" onclick="rt('st4',4)">★</span><span class="star" onclick="rt('st4',5)">★</span></div></div>
+  <div class="qb"><span class="ql">5. Is there anything you would change or add?</span><textarea placeholder="Any suggestions..."></textarea></div>
+  <button class="sub-btn" onclick="subFb()">Submit Feedback</button>
+</div>
+
+<div class="fb-wrap" id="ty" style="display:none">
+  <div class="ty"><div class="ico">🎨</div><h3>Feedback Received</h3><p>Thank you for taking part. Your responses have been noted and will be used to evaluate and improve the checkout design.</p></div>
+</div>
+
+<script>
+let cur=1; const done=new Set();
+function goTo(n){document.getElementById('s'+cur).classList.remove('active');document.getElementById('s'+n).classList.add('active');cur=n;}
+function mk(n){if(done.has(n))return;done.add(n);const el=document.getElementById('tn'+n);if(el){el.classList.add('done');el.textContent='✓';}}
+function chQ(b,d){const n=b.parentElement.querySelector('.qnum');let q=parseInt(n.textContent)+d;if(q<1)q=1;if(q>9)q=9;n.textContent=q;}
+function rmI(b){const i=b.closest('.item');i.style.transition='opacity .2s,transform .2s';i.style.opacity='0';i.style.transform='translateX(-14px)';setTimeout(()=>i.remove(),200);}
+function showVc(){document.getElementById('vcBox').style.display='block';document.getElementById('vcLink').style.display='none';}
+function applyVc(){const v=document.getElementById('vcInput').value.toUpperCase();if(v.includes('CRAFT')){document.getElementById('discRow').style.display='flex';document.getElementById('totalAmt').textContent='£31.41';document.getElementById('vcInput').value='CRAFT10 — Applied ✓';document.getElementById('vcInput').disabled=true;document.getElementById('vcInput').style.borderColor='#007A20';mk(3);}}
+function pcLookup(){const v=document.getElementById('pcIn').value;if(v.length>=3){document.getElementById('fn').value='Jane';document.getElementById('ln').value='Smith';document.getElementById('a1').value='12 Craft Lane';document.getElementById('ct').value='Norwich';document.getElementById('pc').value=v.toUpperCase();document.getElementById('afMsg').style.display='block';}}
+function selD(el){document.querySelectorAll('.del-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');}
+function selT(el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));el.classList.add('act');const tx=el.textContent.trim();document.getElementById('cF').style.display=tx==='Card'?'block':'none';document.getElementById('pF').style.display=tx==='PayPal'?'block':'none';document.getElementById('aF').style.display=tx==='Apple Pay'?'block':'none';}
+function fC(i){let v=i.value.replace(/\D/g,'').substring(0,16);i.value=v.replace(/(.{4})/g,'$1 ').trim();}
+function fE(i){let v=i.value.replace(/\D/g,'');if(v.length>=2)v=v.substring(0,2)+' / '+v.substring(2,4);i.value=v;}
+function placeOrder(){const b=event.target;b.textContent='Processing…';b.style.opacity='.7';setTimeout(()=>{mk(1);goTo(4);},1200);}
+function showFb(){document.getElementById('phone').style.display='none';document.getElementById('taskPanel').style.display='none';document.getElementById('fbForm').style.display='block';window.scrollTo({top:0,behavior:'smooth'});}
+function rt(id,n){document.querySelectorAll('#'+id+' .star').forEach((s,i)=>s.classList.toggle('lit',i<n));}
+function subFb(){document.getElementById('fbForm').style.display='none';document.getElementById('ty').style.display='block';window.scrollTo({top:0,behavior:'smooth'});}
+</script>
+</body>
+</html>
